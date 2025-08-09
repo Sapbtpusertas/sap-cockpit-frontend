@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react';
-import { CChartLine, CChartRadar } from '@coreui/react-chartjs';
+import { CChartLine, CChartBar } from '@coreui/react-chartjs';
 import { 
     Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, 
     CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User,
