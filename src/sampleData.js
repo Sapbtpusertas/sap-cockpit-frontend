@@ -1,4 +1,4 @@
-// File: sap-cockpit-frontend/src/sampleData.js
+// File: src/sampleData.js
 // This new file contains curated sample data for three companies.
 import { assessmentFramework } from './assessmentData';
 
