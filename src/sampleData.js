@@ -1,5 +1,6 @@
 // File: sap-cockpit-frontend/src/sampleData.js
 // This new file contains curated sample data for three companies.
+import { assessmentFramework } from './assessmentData';
 
 // Helper function to generate scores based on a target health level
 const generateScores = (health) => {
