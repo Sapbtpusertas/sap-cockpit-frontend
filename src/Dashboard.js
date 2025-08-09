@@ -4,7 +4,7 @@ import { CChartLine } from '@coreui/react-chartjs';
 import '@coreui/coreui/dist/css/coreui.min.css';
 
 // IMPORTANT: Replace this with your live backend URL from Part 2
-const API_URL = 'http://localhost:8000/api/assessment'; 
+const API_URL = 'https://sap-cockpit-backend.onrender.com/api/assessment'; 
 // Example Live URL: 'https://sap-cockpit-backend.onrender.com/api/assessment'
 
 const Dashboard = () => {
