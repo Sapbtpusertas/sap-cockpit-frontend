@@ -1,10 +1,7 @@
-// File: sap-cockpit-frontend/src/App.js
-// This is the main file for your React application.
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader, CWidgetStatsF } from '@coreui/react';
 import { CChartLine } from '@coreui/react-chartjs';
-import { Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, CheckCircle, AlertTriangle, XCircle, Info } from 'lucide-react';
+import { Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import '@coreui/coreui/dist/css/coreui.min.css';
 
 // --- Mock Database ---
