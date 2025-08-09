@@ -1,6 +1,5 @@
 // File: src/database.js
 // This new file simulates the data backend.
-import { assessmentFramework } from './assessmentData';
 
 const rawData = {
     'cust_101': { // Healthy Customer

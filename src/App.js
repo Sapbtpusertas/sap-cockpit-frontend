@@ -5,9 +5,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react';
 import { CChartLine, CChartRadar } from '@coreui/react-chartjs';
 import { 
-    Database, FileUp, PlayCircle, ChevronLeft, Building, 
+    Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, 
     CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User,
-    Maximize2, Minimize2, KeyRound
+    Maximize2, Minimize2, Cpu, KeyRound
 } from 'lucide-react';
 import '@coreui/coreui/dist/css/coreui.min.css';
 import { assessmentFramework } from './assessmentData';
