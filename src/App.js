@@ -78,7 +78,9 @@ function App() {
 
     useEffect(scrollToBottom, [messages]);
 
+    // Effect to handle initial messages
     useEffect(() => {
+        // If chat is opened with a specific risk context
         if (context) {
             const initialMessage = {
                 sender: 'bot',
@@ -86,8 +88,16 @@ function App() {
             };
             setMessages([initialMessage]);
             setIsOpen(true);
+        } 
+        // If chat is opened without context (e.g., via FAB) and is empty
+        else if (isOpen && messages.length === 0) {
+            const welcomeMessage = {
+                sender: 'bot',
+                text: 'Hello! I am the Analyst Assistant. To learn more about a specific risk, click the bot icon next to it in the dashboard. You can also ask me general questions about SAP.'
+            };
+            setMessages([welcomeMessage]);
         }
-    }, [context, setIsOpen]);
+    }, [context, isOpen, setIsOpen]); // Removed messages.length to avoid re-triggering
 
     const handleSend = async () => {
         if (input.trim() === '' || isLoading) return;
@@ -98,14 +108,23 @@ function App() {
         setInput('');
         setIsLoading(true);
 
-        const promptText = `
-            You are an expert SAP Security Architect. A user is asking about the following finding.
-            Finding: "${context.title}"
-            Description: "${context.description}"
-            User's question: "${currentInput}"
-
-            Please provide a helpful and clear response. Keep your answer concise and to the point.
-        `;
+        // Determine the prompt based on whether there's a context
+        let promptText;
+        if (context) {
+            promptText = `
+                You are an expert SAP Security Architect. A user is asking about the following finding.
+                Finding: "${context.title}"
+                Description: "${context.description}"
+                User's question: "${currentInput}"
+                Please provide a helpful and clear response. Keep your answer concise and to the point.
+            `;
+        } else {
+            promptText = `
+                You are an expert SAP Security Architect. A user is asking a general question.
+                User's question: "${currentInput}"
+                Please provide a helpful and clear response. Keep your answer concise and to the point.
+            `;
+        }
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
         const payload = {
@@ -136,7 +155,10 @@ function App() {
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
-            setContext(null);
+            // Clear context after the first question to allow for a general follow-up conversation
+            if (context) {
+                setContext(null);
+            }
         }
     };
 
@@ -176,13 +198,13 @@ function App() {
                 <div className="chatbot-input">
                     <input 
                         type="text" 
-                        placeholder="Ask about this finding..." 
+                        placeholder="Ask a question..." 
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                        disabled={!context && messages.length === 0}
+                        disabled={isLoading}
                     />
-                    <button onClick={handleSend} disabled={isLoading || (!context && messages.length === 0)}>
+                    <button onClick={handleSend} disabled={isLoading}>
                         <Send size={20} />
                     </button>
                 </div>
