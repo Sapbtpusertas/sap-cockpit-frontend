@@ -97,7 +97,7 @@ function App() {
             };
             setMessages([welcomeMessage]);
         }
-    }, [context, isOpen, setIsOpen]); // Removed messages.length to avoid re-triggering
+    }, [context, isOpen, setIsOpen, messages.length]); // Added messages.length to dependencies
 
     const handleSend = async () => {
         if (input.trim() === '' || isLoading) return;
