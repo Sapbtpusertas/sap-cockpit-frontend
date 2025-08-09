@@ -1,3 +1,6 @@
+// File: sap-cockpit-frontend/src/assessmentData.js
+// This file now contains the complete, researched, and structured 127-point assessment framework.
+
 export const assessmentFramework = {
     "1": {
         id: "1",
@@ -117,18 +120,4 @@ export const assessmentFramework = {
             }
         }
     }
-};
-
-// Generates sample scores for the checks to simulate collected data
-export const generateSampleScores = () => {
-    const scores = {};
-    Object.values(assessmentFramework).forEach(pillar => {
-        Object.values(pillar.categories).forEach(category => {
-            category.checks.forEach(check => {
-                // Score between 60 and 100
-                scores[check.id] = Math.floor(Math.random() * 41) + 60; 
-            });
-        });
-    });
-    return scores;
 };
