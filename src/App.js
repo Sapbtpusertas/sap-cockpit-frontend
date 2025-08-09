@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader, CWidgetStatsF } from '@coreui/react';
+import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react';
 import { CChartLine } from '@coreui/react-chartjs';
 import { 
     Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, 
     CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User,
-    Maximize2, Minimize2
+    Maximize2, Minimize2, Cpu
 } from 'lucide-react';
 import '@coreui/coreui/dist/css/coreui.min.css';
 import { assessmentFramework, generateSampleScores } from './assessmentData'; // Import the new data module
 
 // --- Mock Database ---
-// This now focuses on customer info and high-level risks.
-// The detailed scores are generated dynamically.
 const customerData = {
   'cust_101': {
     name: 'Global Trade Corp.',
-    // Scores are now generated on-the-fly to simulate a real analysis run
     scores: generateSampleScores(), 
     historicalTrend: {
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -188,7 +185,7 @@ const MainHub = ({ setPage }) => {
             onClick={() => setPage('dataCollection')}
           />
           <Tile
-            icon={<PlayCircle size={48} />}
+            icon={<Cpu size={48} />}
             title="Analysis & Reports"
             description="Trigger analysis on collected data, review findings, and access historical assessment reports."
             onClick={() => setPage('analysis')}
@@ -212,16 +209,21 @@ const MainHub = ({ setPage }) => {
 
 const DataCollection = ({ setPage, customerId, collectedData, setCollectedData }) => {
       const [selectedPillarId, setSelectedPillarId] = useState(Object.keys(assessmentFramework)[0]);
-      
+      const [unstructuredText, setUnstructuredText] = useState('');
+      const [isParsing, setIsParsing] = useState(false);
+
       const handleFileUpload = (checkId) => {
-          // Simulate file upload and update the data store
-          setCollectedData(prev => ({
-              ...prev,
-              [customerId]: {
-                  ...prev[customerId],
-                  [checkId]: { status: 'Collected', timestamp: new Date().toISOString() }
-              }
-          }));
+          setCollectedData(prev => ({ ...prev, [customerId]: { ...prev[customerId], [checkId]: { status: 'Collected', timestamp: new Date().toISOString() } } }));
+      };
+
+      const handleParseWithAI = async (checkId) => {
+          setIsParsing(true);
+          // Simulate API call to Gemini to parse unstructured text
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          console.log(`Simulating AI parsing for check ${checkId} with data: ${unstructuredText}`);
+          // In a real app, you would update the state with structured data
+          setIsParsing(false);
+          handleFileUpload(checkId); // Mark as collected after parsing
       };
 
       const pillar = assessmentFramework[selectedPillarId];
@@ -231,7 +233,7 @@ const DataCollection = ({ setPage, customerId, collectedData, setCollectedData }
           <CContainer className="py-4">
               <button onClick={() => setPage('hub')} className="btn btn-link mb-3 p-0"><ChevronLeft size={16} className="me-1" /> Back to Hub</button>
               <h2>Data Collection for {customerData[customerId].name}</h2>
-              <p className="text-muted">Provide the necessary data for analysis. Data collection status is saved per customer.</p>
+              <p className="text-muted">Provide the necessary data for analysis. The collection status is saved per customer for this session.</p>
               
               <CCard>
                   <CCardBody>
@@ -245,17 +247,27 @@ const DataCollection = ({ setPage, customerId, collectedData, setCollectedData }
                           <div key={category.id} className="mb-4">
                               <h6>{category.name}</h6>
                               {category.checks.map(check => (
-                                  <div key={check.id} className="p-3 border rounded mb-2 d-flex justify-content-between align-items-center">
-                                      <div>
+                                  <div key={check.id} className="p-3 border rounded mb-2">
+                                      <div className="d-flex justify-content-between align-items-center">
                                           <strong>{check.name}</strong>
-                                          <p className="text-muted small mb-0">How-to: Follow standard procedure to export data for {check.name}.</p>
+                                          {customerCheckData[check.id] ? (
+                                              <div className="text-success d-flex align-items-center"><CheckCircle size={20} className="me-2"/> Collected</div>
+                                          ) : (
+                                              check.collectionType === 'Fully Automated' ? <div className="text-muted">Pending Agent Run</div> : 
+                                              <button className="btn btn-sm btn-outline-primary" onClick={() => handleFileUpload(check.id)}><FileUp size={16} className="me-2"/> Upload File</button>
+                                          )}
                                       </div>
-                                      {customerCheckData[check.id] ? (
-                                          <div className="text-success"><CheckCircle size={20} className="me-2"/> Collected</div>
-                                      ) : (
-                                          <button className="btn btn-sm btn-outline-primary" onClick={() => handleFileUpload(check.id)}>
-                                              <FileUp size={16} className="me-2"/> Upload Data
-                                          </button>
+                                      <div className="mt-2 p-2 bg-light rounded small">
+                                          <strong>How-to Guide:</strong>
+                                          <p className="mb-0 text-muted">{check.dataSource}</p>
+                                      </div>
+                                      {check.collectionType === 'Manual' && !customerCheckData[check.id] && (
+                                        <div className="mt-2">
+                                            <textarea className="form-control form-control-sm" rows="3" placeholder="Or paste unstructured data here..." onChange={e => setUnstructuredText(e.target.value)}></textarea>
+                                            <button className="btn btn-sm btn-secondary mt-2" onClick={() => handleParseWithAI(check.id)} disabled={isParsing || !unstructuredText}>
+                                                {isParsing ? 'Parsing...' : 'Parse with AI'}
+                                            </button>
+                                        </div>
                                       )}
                                   </div>
                               ))}
@@ -277,46 +289,22 @@ const Analysis = ({ setPage }) => {
   
       return (
           <CContainer className="py-4">
-              <button onClick={() => setPage('hub')} className="btn btn-link mb-3 p-0">
-                  <ChevronLeft size={16} className="me-1" /> Back to Hub
-              </button>
+              <button onClick={() => setPage('hub')} className="btn btn-link mb-3 p-0"><ChevronLeft size={16} className="me-1" /> Back to Hub</button>
               <h2>Analysis & Reports</h2>
               <p className="text-muted">Review past analysis runs or trigger a new one.</p>
-              <button className="btn btn-primary mb-4">
-                  <PlayCircle size={16} className="me-2" /> Trigger New Full Analysis
-              </button>
+              <button className="btn btn-primary mb-4"><PlayCircle size={16} className="me-2" /> Trigger New Full Analysis</button>
               <CCard>
                   <CCardHeader>Historical Analysis Runs</CCardHeader>
                   <CCardBody>
                       <div className="table-responsive">
                           <table className="table table-hover">
-                              <thead>
-                                  <tr>
-                                      <th>Run ID</th>
-                                      <th>Date</th>
-                                      <th>Status</th>
-                                      <th className="text-end">Findings</th>
-                                      <th className="text-end">Overall Score</th>
-                                      <th className="text-end">Actions</th>
-                                  </tr>
-                              </thead>
+                              <thead><tr><th>Run ID</th><th>Date</th><th>Status</th><th className="text-end">Findings</th><th className="text-end">Overall Score</th><th className="text-end">Actions</th></tr></thead>
                               <tbody>
                                   {analysisRuns.map(run => (
                                       <tr key={run.id}>
-                                          <td>{run.id}</td>
-                                          <td>{run.date}</td>
-                                          <td><span className="me-2">{run.icon}</span>{run.status}</td>
-                                          <td className="text-end">{run.findings}</td>
-                                          <td className="text-end fw-bold">{run.score > 0 ? `${run.score}%` : 'N/A'}</td>
-                                          <td className="text-end">
-                                              <button 
-                                                  className="btn btn-sm btn-outline-primary"
-                                                  onClick={() => setPage('dashboard')}
-                                                  disabled={run.status === 'Failed'}
-                                              >
-                                                  View Dashboard
-                                              </button>
-                                          </td>
+                                          <td>{run.id}</td><td>{run.date}</td><td><span className="me-2">{run.icon}</span>{run.status}</td>
+                                          <td className="text-end">{run.findings}</td><td className="text-end fw-bold">{run.score > 0 ? `${run.score}%` : 'N/A'}</td>
+                                          <td className="text-end"><button className="btn btn-sm btn-outline-primary" onClick={() => setPage('dashboard')} disabled={run.status === 'Failed'}>View Dashboard</button></td>
                                       </tr>
                                   ))}
                               </tbody>
@@ -329,20 +317,19 @@ const Analysis = ({ setPage }) => {
 };
 
 const Dashboard = ({ setPage, customerData, onStartChat }) => {
-    // Calculate pillar scores dynamically based on the framework and sample data
     const summary = useMemo(() => {
         const pillarScores = {};
         Object.values(assessmentFramework).forEach(pillar => {
-            let totalWeight = 0;
-            let weightedScore = 0;
+            let totalWeight = 0, weightedScore = 0, checkCount = 0;
             Object.values(pillar.categories).forEach(category => {
                 category.checks.forEach(check => {
                     totalWeight += check.weight;
                     weightedScore += (customerData.scores[check.id] || 0) * check.weight;
+                    checkCount++;
                 });
             });
             const finalScore = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
-            pillarScores[pillar.id] = { title: pillar.name, score: finalScore };
+            pillarScores[pillar.id] = { title: pillar.name, score: finalScore, checkCount: checkCount };
         });
         return pillarScores;
     }, [customerData.scores]);
@@ -362,7 +349,14 @@ const Dashboard = ({ setPage, customerData, onStartChat }) => {
           <CRow className="mb-4">
             {Object.values(summary).map((value) => (
               <CCol xs={12} sm={6} lg key={value.title} className="mb-3">
-                <CWidgetStatsF className="h-100 shadow-sm border-0" color={getScoreColor(value.score)} padding={false} title={<div className="text-white p-3">{value.title}</div>} value={<div className="text-white p-3 fs-2">{`${value.score}%`}</div>} />
+                 <CCard className={`h-100 shadow-sm border-0 text-white bg-${getScoreColor(value.score)}`}>
+                    <CCardBody>
+                        <div className="d-flex justify-content-between align-items-start">
+                            <div><h5 className="card-title mb-0">{value.title}</h5><small>{value.checkCount} Checks</small></div>
+                            <div className="fs-2 fw-bold">{`${value.score}%`}</div>
+                        </div>
+                    </CCardBody>
+                 </CCard>
               </CCol>
             ))}
           </CRow>
