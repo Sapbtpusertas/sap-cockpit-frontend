@@ -29,8 +29,8 @@ const analyze = (checkId, data) => {
 
 export const calculateAllScores = (customerId, allRawData) => {
     const calculatedScores = {};
-    Object.values(assessmentFramework).flat().forEach(pillar => {
-        Object.values(pillar.categories).flat().forEach(category => {
+    Object.values(assessmentFramework).forEach(pillar => {
+        Object.values(pillar.categories).forEach(category => {
             category.checks.forEach(check => {
                 const rawData = allRawData[check.id];
                 calculatedScores[check.id] = analyze(check.id, rawData);
