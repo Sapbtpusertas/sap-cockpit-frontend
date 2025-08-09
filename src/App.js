@@ -167,6 +167,22 @@ const MainHub = ({ setPage, customerData }) => {
       if (score >= 70) return 'warning';
       return 'danger';
     };
+
+    const Tile = ({ icon, title, description, onClick }) => (
+      <CCol md={4}>
+        <CCard 
+          className="h-100 text-center shadow-sm hub-tile" 
+          onClick={onClick}
+          style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+        >
+          <CCardBody className="d-flex flex-column justify-content-center align-items-center p-4">
+            <div className="mb-3 text-primary">{icon}</div>
+            <h5 className="card-title">{title}</h5>
+            <p className="card-text text-muted">{description}</p>
+          </CCardBody>
+        </CCard>
+      </CCol>
+    );
   
     return (
       <CContainer style={{ paddingTop: '80px' }}>
