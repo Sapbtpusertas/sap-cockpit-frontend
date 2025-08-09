@@ -3,7 +3,8 @@ import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader, CWidgetStatsF } 
 import { CChartLine } from '@coreui/react-chartjs';
 import { 
     Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, 
-    CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User 
+    CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User,
+    Maximize2, Minimize2
 } from 'lucide-react';
 import '@coreui/coreui/dist/css/coreui.min.css';
 
@@ -63,10 +64,11 @@ function App() {
 
   // --- Components defined inside App to resolve linter scope issues in CI ---
   
-  const Chatbot = ({ isOpen, setIsOpen, context, setContext }) => {
+  const Chatbot = ({ isOpen, setIsOpen, context, setContext, customerName }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isMaximized, setIsMaximized] = useState(false);
     const messagesEndRef = useRef(null);
 
     // IMPORTANT: Add your Gemini API Key here
@@ -84,7 +86,7 @@ function App() {
         if (context) {
             const initialMessage = {
                 sender: 'bot',
-                text: `You've asked about the finding: **"${context.title}"**. How can I help you understand this risk? You can ask about its impact, how to fix it, or for a simpler explanation.`
+                text: `You've asked about the finding: **"${context.title}"**. How can I help you understand this risk for customer **${customerName}** on system **${context.system}**? You can ask about its impact, how to fix it, or for a simpler explanation.`
             };
             setMessages([initialMessage]);
             setIsOpen(true);
@@ -97,7 +99,7 @@ function App() {
             };
             setMessages([welcomeMessage]);
         }
-    }, [context, isOpen, setIsOpen, messages.length]); // Added messages.length to dependencies
+    }, [context, isOpen, setIsOpen, messages.length, customerName]);
 
     const handleSend = async () => {
         if (input.trim() === '' || isLoading) return;
@@ -112,11 +114,11 @@ function App() {
         let promptText;
         if (context) {
             promptText = `
-                You are an expert SAP Security Architect. A user is asking about the following finding.
-                Finding: "${context.title}"
+                You are an expert SAP Security Architect advising on a finding for customer "${customerName}".
+                Finding: "${context.title}" on system "${context.system}".
                 Description: "${context.description}"
                 User's question: "${currentInput}"
-                Please provide a helpful and clear response. Keep your answer concise and to the point.
+                Please provide a helpful and clear response, tailored to this context. Keep your answer concise and to the point.
             `;
         } else {
             promptText = `
@@ -141,21 +143,17 @@ function App() {
             });
 
             if (!response.ok) {
-                // Try to get more specific error from API response body
                 const errorData = await response.json().catch(() => null);
                 throw new Error(`API error: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`);
             }
 
             const result = await response.json();
-            
-            // **Robust response parsing**
             const botResponseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
 
             if (botResponseText) {
                 const botMessage = { sender: 'bot', text: botResponseText };
                 setMessages(prev => [...prev, botMessage]);
             } else {
-                // Handle cases where the response is successful but doesn't contain the expected text
                 console.error("Invalid response structure from Gemini API:", result);
                 throw new Error("Could not parse a valid response from the AI assistant.");
             }
@@ -166,7 +164,6 @@ function App() {
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
-            // Clear context after the first question to allow for a general follow-up conversation
             if (context) {
                 setContext(null);
             }
@@ -182,10 +179,15 @@ function App() {
                 <MessageSquare size={30} color="white" />
             </div>
 
-            <div className={`chatbot-window ${isOpen ? 'open' : ''}`}>
+            <div className={`chatbot-window ${isOpen ? 'open' : ''} ${isMaximized ? 'maximized' : ''}`}>
                 <div className="chatbot-header">
                     <h5>Analyst Assistant</h5>
-                    <button onClick={() => setIsOpen(false)}><X size={20} /></button>
+                    <div>
+                        <button onClick={() => setIsMaximized(!isMaximized)} className="me-2">
+                            {isMaximized ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                        </button>
+                        <button onClick={() => setIsOpen(false)}><X size={20} /></button>
+                    </div>
                 </div>
                 <div className="chatbot-messages">
                     {messages.map((msg, index) => (
@@ -263,6 +265,12 @@ function App() {
                 }
                 .chatbot-window.open {
                     transform: scale(1);
+                }
+                .chatbot-window.maximized {
+                    width: 80vw;
+                    height: 80vh;
+                    bottom: 30px;
+                    right: 30px;
                 }
                 .chatbot-header {
                     background: #f8f9fa;
@@ -713,6 +721,7 @@ function App() {
         setIsOpen={setIsChatOpen} 
         context={chatContext} 
         setContext={setChatContext} 
+        customerName={customerData[customerId].name}
       />
     </div>
   );
