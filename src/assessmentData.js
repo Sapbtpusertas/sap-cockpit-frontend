@@ -1,5 +1,5 @@
-// File: sap-cockpit-frontend/src/assessmentData.js
-// This file now contains the complete, researched, and structured 127-point assessment framework.
+// File: src/assessmentData.js
+// This is the master knowledge base, containing the full 127-point framework.
 
 export const assessmentFramework = {
     "1": {
