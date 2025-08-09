@@ -405,13 +405,13 @@ const PillarDashboard = ({ setPage, pillarId, customerData }) => {
         return scores;
     }, [pillar, customerData.scores]);
 
-    const radarChartData = {
+    const chartData = {
         labels: Object.values(categoryScores).map(c => c.name),
         datasets: [{
-            label: `${pillar.name} Health`,
-            backgroundColor: 'rgba(50, 150, 250, 0.2)',
+            label: 'Category Score',
+            backgroundColor: 'rgba(50, 150, 250, 0.5)',
             borderColor: 'rgba(50, 150, 250, 1)',
-            pointBackgroundColor: 'rgba(50, 150, 250, 1)',
+            borderWidth: 1,
             data: Object.values(categoryScores).map(c => c.score),
         }],
     };
@@ -424,7 +424,7 @@ const PillarDashboard = ({ setPage, pillarId, customerData }) => {
                 <CCol md={6} className="mb-4">
                     <CCard className="h-100">
                         <CCardHeader>Category Health Overview</CCardHeader>
-                        <CCardBody><CChartRadar data={radarChartData} /></CCardBody>
+                        <CCardBody><CChartBar data={chartData} options={{ indexAxis: 'y' }} /></CCardBody>
                     </CCard>
                 </CCol>
                 <CCol md={6}>
