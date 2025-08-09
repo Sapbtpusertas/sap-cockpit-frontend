@@ -55,3 +55,4 @@ export const getRawDataForCheck = (customerId, checkId) => {
 
 export const getRawDataForCustomer = (customerId) => {
     return rawData[customerId] || {};
+};
