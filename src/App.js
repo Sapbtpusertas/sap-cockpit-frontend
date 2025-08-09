@@ -7,7 +7,7 @@ import { CChartLine, CChartRadar } from '@coreui/react-chartjs';
 import { 
     Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, 
     CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User,
-    Maximize2, Minimize2, Cpu, KeyRound, GaugeCircle
+    Maximize2, Minimize2, Cpu, KeyRound
 } from 'lucide-react';
 import '@coreui/coreui/dist/css/coreui.min.css';
 import { assessmentFramework } from './assessmentData';
@@ -387,6 +387,59 @@ const Dashboard = ({ setPage, customerData, onStartChat }) => {
           </CRow>
         </CContainer>
       </div>
+    );
+};
+
+const PillarDashboard = ({ setPage, pillarId, customerData }) => {
+    const pillar = assessmentFramework[pillarId];
+    const categoryScores = useMemo(() => {
+        const scores = {};
+        Object.values(pillar.categories).forEach(category => {
+            let totalWeight = 0, weightedScore = 0;
+            category.checks.forEach(check => {
+                totalWeight += check.weight;
+                weightedScore += (customerData.scores[check.id] || 0) * check.weight;
+            });
+            scores[category.id] = { name: category.name, score: totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0, checkCount: category.checks.length };
+        });
+        return scores;
+    }, [pillar, customerData.scores]);
+
+    const radarChartData = {
+        labels: Object.values(categoryScores).map(c => c.name),
+        datasets: [{
+            label: `${pillar.name} Health`,
+            backgroundColor: 'rgba(50, 150, 250, 0.2)',
+            borderColor: 'rgba(50, 150, 250, 1)',
+            pointBackgroundColor: 'rgba(50, 150, 250, 1)',
+            data: Object.values(categoryScores).map(c => c.score),
+        }],
+    };
+
+    return (
+        <CContainer className="py-4">
+            <button onClick={() => setPage({ view: 'hub' })} className="btn btn-link mb-3 p-0"><ChevronLeft size={16} className="me-1" /> Back to Hub</button>
+            <h2>{pillar.name}</h2>
+            <CRow>
+                <CCol md={6} className="mb-4">
+                    <CCard className="h-100">
+                        <CCardHeader>Category Health Overview</CCardHeader>
+                        <CCardBody><CChartRadar data={radarChartData} /></CCardBody>
+                    </CCard>
+                </CCol>
+                <CCol md={6}>
+                    {Object.entries(categoryScores).map(([id, category]) => (
+                        <CCard key={id} className="mb-3 scorecard" onClick={() => setPage({ view: 'category', pillarId, categoryId: id })}>
+                            <CCardBody className="d-flex justify-content-between align-items-center">
+                                <div><h5>{category.name}</h5><small className="text-muted">{category.checkCount} Checks</small></div>
+                                <div className="fs-3 fw-bold">{category.score}%</div>
+                            </CCardBody>
+                        </CCard>
+                    ))}
+                </CCol>
+            </CRow>
+            <style>{`.scorecard { cursor: pointer; transition: transform 0.2s; } .scorecard:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }`}</style>
+        </CContainer>
     );
 };
 
