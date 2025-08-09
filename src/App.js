@@ -141,17 +141,28 @@ function App() {
             });
 
             if (!response.ok) {
-                throw new Error(`API error: ${response.statusText}`);
+                // Try to get more specific error from API response body
+                const errorData = await response.json().catch(() => null);
+                throw new Error(`API error: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`);
             }
 
             const result = await response.json();
-            const botResponseText = result.candidates[0].content.parts[0].text;
-            const botMessage = { sender: 'bot', text: botResponseText };
-            setMessages(prev => [...prev, botMessage]);
+            
+            // **Robust response parsing**
+            const botResponseText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (botResponseText) {
+                const botMessage = { sender: 'bot', text: botResponseText };
+                setMessages(prev => [...prev, botMessage]);
+            } else {
+                // Handle cases where the response is successful but doesn't contain the expected text
+                console.error("Invalid response structure from Gemini API:", result);
+                throw new Error("Could not parse a valid response from the AI assistant.");
+            }
 
         } catch (error) {
             console.error("Failed to fetch from Gemini API:", error);
-            const errorMessage = { sender: 'bot', text: "Sorry, I'm having trouble connecting to the AI assistant right now. Please try again later." };
+            const errorMessage = { sender: 'bot', text: `Sorry, I'm having trouble connecting to the AI assistant right now. Please check the API key and try again. Error: ${error.message}` };
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
