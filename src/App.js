@@ -40,18 +40,9 @@ const customerData = {
   }
 };
 
+// --- Child Components ---
 
-// --- Main App Component ---
-function App() {
-  const [page, setPage] = useState('hub');
-  const [customerId, setCustomerId] = useState(Object.keys(customerData)[0]);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatContext, setChatContext] = useState(null);
-  const [collectedData, setCollectedData] = useState({}); // Simulated data store
-
-  // --- Components defined inside App to resolve linter scope issues in CI ---
-  
-  const Chatbot = ({ isOpen, setIsOpen, context, setContext, customerName }) => {
+const Chatbot = ({ isOpen, setIsOpen, context, setContext, customerName }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -153,22 +144,73 @@ function App() {
             <style>{`.chatbot-fab{position:fixed;bottom:30px;right:30px;width:60px;height:60px;background:linear-gradient(45deg,#0d6efd,#0d6efd);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s ease;z-index:1000}.chatbot-fab:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(0,0,0,.3)}.chatbot-fab.hidden{transform:scale(0)}.chatbot-window{position:fixed;bottom:30px;right:30px;width:370px;height:500px;background-color:#fff;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,.2);display:flex;flex-direction:column;transform:scale(0);transform-origin:bottom right;transition:all .3s ease;z-index:1000;overflow:hidden}.chatbot-window.open{transform:scale(1)}.chatbot-window.maximized{width:80vw;height:80vh;bottom:30px;right:30px}.chatbot-header{background:#f8f9fa;padding:15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e9ecef}.chatbot-header h5{margin:0;font-weight:600}.chatbot-header button{background:0 0;border:none;cursor:pointer;color:#6c757d}.chatbot-messages{flex-grow:1;padding:15px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}.message{display:flex;align-items:flex-start;gap:10px;max-width:90%}.message.user{align-self:flex-end;flex-direction:row-reverse}.message-icon{flex-shrink:0;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}.message.bot .message-icon{background:#e9ecef;color:#495057}.message.user .message-icon{background:#0d6efd;color:#fff}.message-text{padding:12px;border-radius:12px;background:#f1f3f5;font-size:.9rem;line-height:1.5}.message.user .message-text{background:#0d6efd;color:#fff}.chatbot-input{display:flex;padding:15px;border-top:1px solid #e9ecef}.chatbot-input input{flex-grow:1;border:1px solid #ced4da;border-radius:20px;padding:10px 15px;font-size:.9rem;margin-right:10px}.chatbot-input input:disabled{background-color:#f8f9fa}.chatbot-input button{flex-shrink:0;width:40px;height:40px;border-radius:50%;border:none;background:#0d6efd;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}.chatbot-input button:disabled{background:#6c757d}.typing-indicator span{height:8px;width:8px;float:left;margin:0 1px;background-color:#9e9e9e;display:block;border-radius:50%;opacity:.4;animation:C-Animation 1s infinite}.typing-indicator span:nth-child(2){animation-delay:.2s}.typing-indicator span:nth-child(3){animation-delay:.4s}@keyframes C-Animation{50%{opacity:1}}`}</style>
         </>
     );
-  };
+};
 
-  const CustomerSelector = ({ customerId, setCustomerId }) => (
-    <div className="position-absolute top-0 end-0 p-3" style={{ zIndex: 1050 }}>
-      <div className="input-group">
-        <span className="input-group-text bg-light border-0"><Building size={18} /></span>
-        <select className="form-select" value={customerId} onChange={(e) => setCustomerId(e.target.value)} aria-label="Select Customer">
-          {Object.keys(customerData).map(id => (<option key={id} value={id}>{customerData[id].name}</option>))}
-        </select>
-      </div>
+const CustomerSelector = ({ customerId, setCustomerId }) => (
+  <div className="position-absolute top-0 end-0 p-3" style={{ zIndex: 1050 }}>
+    <div className="input-group">
+      <span className="input-group-text bg-light border-0"><Building size={18} /></span>
+      <select className="form-select" value={customerId} onChange={(e) => setCustomerId(e.target.value)} aria-label="Select Customer">
+        {Object.keys(customerData).map(id => (<option key={id} value={id}>{customerData[id].name}</option>))}
+      </select>
     </div>
-  );
+  </div>
+);
 
-  const MainHub = ({ setPage }) => { /* ... (no changes) ... */ };
+const MainHub = ({ setPage }) => {
+    const Tile = ({ icon, title, description, onClick }) => (
+      <CCol md={4}>
+        <CCard 
+          className="h-100 text-center shadow-sm hub-tile" 
+          onClick={onClick}
+          style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+        >
+          <CCardBody className="d-flex flex-column justify-content-center align-items-center p-4">
+            <div className="mb-3 text-primary">{icon}</div>
+            <h5 className="card-title">{title}</h5>
+            <p className="card-text text-muted">{description}</p>
+          </CCardBody>
+        </CCard>
+      </CCol>
+    );
+  
+    return (
+      <CContainer style={{ paddingTop: '80px' }}>
+        <div className="text-center mb-5">
+          <h1 className="display-5">SAP Intelligence Cockpit</h1>
+          <p className="lead text-muted">Your central hub for landscape assessment and optimization.</p>
+        </div>
+        <CRow className="g-4">
+          <Tile
+            icon={<Database size={48} />}
+            title="Data Collection"
+            description="Manage and input your SAP landscape data through guided manual uploads or automated discovery."
+            onClick={() => setPage('dataCollection')}
+          />
+          <Tile
+            icon={<PlayCircle size={48} />}
+            title="Analysis & Reports"
+            description="Trigger analysis on collected data, review findings, and access historical assessment reports."
+            onClick={() => setPage('analysis')}
+          />
+          <Tile
+            icon={<LayoutDashboard size={48} />}
+            title="Intelligence Dashboard"
+            description="Visualize the health of your landscape, track trends, and drill down into critical risks."
+            onClick={() => setPage('dashboard')}
+          />
+        </CRow>
+        <style>{`
+          .hub-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+          }
+        `}</style>
+      </CContainer>
+    );
+};
 
-  const DataCollection = ({ setPage, customerId, collectedData, setCollectedData }) => {
+const DataCollection = ({ setPage, customerId, collectedData, setCollectedData }) => {
       const [selectedPillarId, setSelectedPillarId] = useState(Object.keys(assessmentFramework)[0]);
       
       const handleFileUpload = (checkId) => {
@@ -223,11 +265,70 @@ function App() {
               </CCard>
           </CContainer>
       );
-  };
+};
 
-  const Analysis = ({ setPage }) => { /* ... (no changes) ... */ };
+const Analysis = ({ setPage }) => {
+      const analysisRuns = [
+          { id: 'run_001', date: '2025-08-08', status: 'Completed', findings: 12, score: 88, icon: <CheckCircle className="text-success" /> },
+          { id: 'run_002', date: '2025-07-15', status: 'Completed', findings: 15, score: 85, icon: <CheckCircle className="text-success" /> },
+          { id: 'run_003', date: '2025-06-20', status: 'Completed with Warnings', findings: 21, score: 79, icon: <AlertTriangle className="text-warning" /> },
+          { id: 'run_004', date: '2025-05-10', status: 'Failed', findings: 0, score: 0, icon: <XCircle className="text-danger" /> },
+      ];
+  
+      return (
+          <CContainer className="py-4">
+              <button onClick={() => setPage('hub')} className="btn btn-link mb-3 p-0">
+                  <ChevronLeft size={16} className="me-1" /> Back to Hub
+              </button>
+              <h2>Analysis & Reports</h2>
+              <p className="text-muted">Review past analysis runs or trigger a new one.</p>
+              <button className="btn btn-primary mb-4">
+                  <PlayCircle size={16} className="me-2" /> Trigger New Full Analysis
+              </button>
+              <CCard>
+                  <CCardHeader>Historical Analysis Runs</CCardHeader>
+                  <CCardBody>
+                      <div className="table-responsive">
+                          <table className="table table-hover">
+                              <thead>
+                                  <tr>
+                                      <th>Run ID</th>
+                                      <th>Date</th>
+                                      <th>Status</th>
+                                      <th className="text-end">Findings</th>
+                                      <th className="text-end">Overall Score</th>
+                                      <th className="text-end">Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  {analysisRuns.map(run => (
+                                      <tr key={run.id}>
+                                          <td>{run.id}</td>
+                                          <td>{run.date}</td>
+                                          <td><span className="me-2">{run.icon}</span>{run.status}</td>
+                                          <td className="text-end">{run.findings}</td>
+                                          <td className="text-end fw-bold">{run.score > 0 ? `${run.score}%` : 'N/A'}</td>
+                                          <td className="text-end">
+                                              <button 
+                                                  className="btn btn-sm btn-outline-primary"
+                                                  onClick={() => setPage('dashboard')}
+                                                  disabled={run.status === 'Failed'}
+                                              >
+                                                  View Dashboard
+                                              </button>
+                                          </td>
+                                      </tr>
+                                  ))}
+                              </tbody>
+                          </table>
+                      </div>
+                  </CCardBody>
+              </CCard>
+          </CContainer>
+      );
+};
 
-  const Dashboard = ({ setPage, customerData, onStartChat }) => {
+const Dashboard = ({ setPage, customerData, onStartChat }) => {
     // Calculate pillar scores dynamically based on the framework and sample data
     const summary = useMemo(() => {
         const pillarScores = {};
@@ -298,8 +399,15 @@ function App() {
         </CContainer>
       </div>
     );
-  };
+};
 
+// --- Main App Component ---
+function App() {
+  const [page, setPage] = useState('hub');
+  const [customerId, setCustomerId] = useState(Object.keys(customerData)[0]);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatContext, setChatContext] = useState(null);
+  const [collectedData, setCollectedData] = useState({}); // Simulated data store
 
   const handleStartChat = (risk) => {
     setChatContext(risk);
