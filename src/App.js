@@ -69,6 +69,9 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
+    // IMPORTANT: Add your Gemini API Key here
+    const apiKey = "AIzaSyDAWS3zICYBz1qKg3Gpm7Zpm_-b-EAa7_A";
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -91,27 +94,50 @@ function App() {
 
         const userMessage = { sender: 'user', text: input };
         setMessages(prev => [...prev, userMessage]);
+        const currentInput = input;
         setInput('');
         setIsLoading(true);
 
-        const prompt = `
+        const promptText = `
             You are an expert SAP Security Architect. A user is asking about the following finding.
             Finding: "${context.title}"
             Description: "${context.description}"
-            User's question: "${input}"
+            User's question: "${currentInput}"
 
-            Please provide a helpful and clear response.
+            Please provide a helpful and clear response. Keep your answer concise and to the point.
         `;
-        console.log("Sending to Gemini (Simulated):", prompt);
 
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        const payload = {
+            contents: [{
+                parts: [{ text: promptText }]
+            }]
+        };
 
-        const botResponseText = `Regarding **"${context.title}"**: ${context.description} This is a critical issue because it can lead to unauthorized access or data breaches. To remediate this, you should immediately implement SNC (Secure Network Communication) for all RFC connections handling sensitive data. This involves configuring cryptographic libraries on both the client and server systems.`;
-        
-        const botMessage = { sender: 'bot', text: botResponseText };
-        setMessages(prev => [...prev, botMessage]);
-        setIsLoading(false);
-        setContext(null);
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            const botResponseText = result.candidates[0].content.parts[0].text;
+            const botMessage = { sender: 'bot', text: botResponseText };
+            setMessages(prev => [...prev, botMessage]);
+
+        } catch (error) {
+            console.error("Failed to fetch from Gemini API:", error);
+            const errorMessage = { sender: 'bot', text: "Sorry, I'm having trouble connecting to the AI assistant right now. Please try again later." };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsLoading(false);
+            setContext(null);
+        }
     };
 
     return (
