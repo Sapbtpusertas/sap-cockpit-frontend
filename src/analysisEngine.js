@@ -1,5 +1,6 @@
 // File: src/analysisEngine.js
 // This new file contains the logic to score checks based on raw data.
+import { assessmentFramework } from './assessmentData';
 
 // A simple analysis engine. In a real app, this would be far more complex.
 const analyze = (checkId, data) => {
