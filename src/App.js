@@ -7,7 +7,7 @@ import { CChartLine, CChartBar } from '@coreui/react-chartjs';
 import { 
     Database, FileUp, PlayCircle, LayoutDashboard, ChevronLeft, Building, 
     CheckCircle, AlertTriangle, XCircle, MessageSquare, Send, X, Bot, User,
-    Maximize2, Minimize2, Cpu, KeyRound
+    Maximize2, Minimize2, Cpu, KeyRound, Plus, Wand2, BarChart2
 } from 'lucide-react';
 import '@coreui/coreui/dist/css/coreui.min.css';
 import { assessmentFramework } from './assessmentData';
